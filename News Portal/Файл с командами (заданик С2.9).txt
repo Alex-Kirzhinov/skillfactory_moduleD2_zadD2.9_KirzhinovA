@@ -1,0 +1,85 @@
+Импортируем модели
+from news.models import *
+
+1. Создаем пользователей.
+u1 = User.objects.create_user(username='Biba')
+u2 = User.objects.create_user(username='Boba')
+
+2. Создаем два объекта модели Author, связанные с пользователями.
+Author.objects.create(user=u1)
+Author.objects.create(user=u2)
+
+3. Добавляем 4 категории в модель Category.
+Category.objects.create(name='Футбол')
+Category.objects.create(name='Хоккей')
+Category.objects.create(name='Персонаж комикса')
+Category.objects.create(name='Книги')
+
+4. Добавляем 2 статьи и 1 новость.
+a1 = Author.objects.get(id=1)-создаем переменную в которую добавляем объект модели Автор
+a2 = Author.objects.get(id=1)
+Post.objects.create(author=a1, article_or_news='AR', title='Спорт номер один', text='Что лучше: футбол или хоккей? На мой взгляд - это футбол.')
+Post.objects.create(author=a1, article_or_news='NW', title='Сенсация', text='Бэтмен теперь профессиональный футболист')
+Post.objects.create(author=a2, article_or_news='AR', title='Персонаж номер один', text='Кто лучше: Заратустра или Один? На мой взгляд - это Заратустра.')
+
+5. Присваиваем им категории (как минимум в одной статье/новости не меньше 2 категорий).
+Post.objects.get(id=1).post_category.add(Category.objects.get(id=1))
+Post.objects.get(id=1).post_category.add(Category.objects.get(name='Хоккей'))
+Post.objects.get(id=2).post_category.add(Category.objects.get(id=1))
+Post.objects.get(id=2).post_category.add(Category.objects.get(id=3))
+Post.objects.get(id=3).post_category.add(Category.objects.get(id=3))
+Post.objects.get(id=3).post_category.add(Category.objects.get(id=4))
+
+6. Создаем как минимум 4 комментария к разным объектам модели Post (минимум один комментарий).
+Comment.objects.create(comment_post=Post.objects.get(id=1), comment_user=a1.user, text='Все верно')
+Comment.objects.create(comment_post=Post.objects.get(id=2), comment_user=Author.objects.get(id=1).user, text='Круто, теперь начну смотреть футбол')
+Comment.objects.create(comment_post=Post.objects.get(id=3), comment_user=a2.user, text='Заратустра лучший, без вариантов')
+Comment.objects.create(comment_post=Post.objects.get(id=3), comment_user=Author.objects.get(id=2).user, text='Полностью поддерживаю')
+
+7. Применяем функции like() и dislike() к статьям/новостям и комментариям, корректируем рейтинги этих объектов.
+for i in Post.objects.all():
+    i.like()     - применяем 3 раза
+
+for i in Post.objects.all():
+    i.dislake()
+
+Post.objects.get(id=3).like()
+
+for i in Comment.objects.all():
+    i.like()	 - применяем 2 раза
+
+Comment.objects.get(id=1).dislike()
+Comment.objects.get(id=2).dislike() 
+Comment.objects.get(id=4).dislike() 
+Comment.objects.get(id=2).dislike() 
+
+for i in Post.objects.all():
+    i.rating
+
+for i in Comment.objects.all():
+    i.rating
+
+8. Обновляем рейтинги пользователей.
+for i in Author.objects.all():  
+    i.update_rating()
+    i.rating_user
+
+9. Выводим username и рейтинг лучшего пользователя (применяя сортировку и возвращая поля первого объекта).
+for i in Author.objects.order_by('-rating_user')[:1]:
+    i.user.username
+    i.rating_user
+
+10. Выводим дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи, основываясь на лайках/дислайках к этой статье.
+for i in Post.objects.order_by('-rating')[:1]:
+    i.time_in
+    i.author.user.username
+    i.rating
+    i.title
+    i.preview()
+
+11. Выводим все комментарии (дата, пользователь, рейтинг, текст) к этой статье.
+for i in Comment.objects.filter(comment_post=Post.objects.order_by('-rating')[:1].values('id')):
+    i.time_in                                                                                        
+    i.rating                                                                                     
+    i.text                                                                                       
+    i.comment_user.username 
